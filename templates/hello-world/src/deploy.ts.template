@@ -30,8 +30,9 @@ globalThis.WebSocket = WebSocket;
 // Configure for Midnight Testnet
 setNetworkId(NetworkId.TestNet);
 
-// Timeout constants (in milliseconds)
+// Timeout for wallet synchronization operations (in milliseconds)
 const WALLET_SYNC_TIMEOUT_MS = 300000; // 5 minutes
+// Timeout for waiting for faucet funds to arrive (in milliseconds)
 const FUNDING_TIMEOUT_MS = 600000; // 10 minutes
 
 const waitForFunds = (wallet: Wallet) =>
