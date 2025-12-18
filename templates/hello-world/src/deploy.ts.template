@@ -33,17 +33,10 @@ setNetworkId(NetworkId.TestNet);
 const waitForFunds = (wallet: Wallet) =>
   Rx.firstValueFrom(
     wallet.state().pipe(
-      Rx.tap((state) => {
-        if (state.syncProgress) {
-          console.log(
-            `Sync progress: synced=${state.syncProgress.synced}, sourceGap=${state.syncProgress.lag.sourceGap}, applyGap=${state.syncProgress.lag.applyGap}`
-          );
-        }
-      }),
       Rx.filter((state) => state.syncProgress?.synced === true),
       Rx.map((s) => s.balances[nativeToken()] ?? 0n),
       Rx.filter((balance) => balance > 0n),
-      Rx.tap((balance) => console.log(`Wallet funded with balance: ${balance}`))
+      Rx.timeout(600000) // 10 minute timeout for funding
     )
   );
 
@@ -71,7 +64,7 @@ async function main() {
 
     // Build wallet from seed
     console.log("Building wallet...");
-    const wallet = await WalletBuilder.buildFromSeed(
+    const wallet = await WalletBuilder.build(
       networkConfig.indexer,
       networkConfig.indexerWS,
       networkConfig.proofServer,
@@ -82,6 +75,23 @@ async function main() {
     );
 
     wallet.start();
+    
+    // Wait for wallet to sync before checking balance
+    console.log(chalk.blue("⏳ Syncing wallet..."));
+    try {
+      await Rx.firstValueFrom(
+        wallet.state().pipe(
+          Rx.filter((s) => s.syncProgress?.synced === true),
+          Rx.timeout(300000) // 5 minute timeout
+        )
+      );
+      console.log(chalk.green("✅ Wallet synced!"));
+    } catch (error) {
+      console.error(chalk.red("❌ Failed to sync wallet:", error instanceof Error ? error.message : String(error)));
+      console.log("💡 Check your network connection and try again.");
+      process.exit(1);
+    }
+
     const state = await Rx.firstValueFrom(wallet.state());
 
     console.log(chalk.cyan.bold("📍 Wallet Address:"));
@@ -114,7 +124,19 @@ async function main() {
       console.log(chalk.white("   • ") + chalk.cyan("Once funded, run: ") + chalk.yellow.bold("npm run deploy"));
       console.log();
       console.log(chalk.blue("⏳ Waiting to receive tokens..."));
-      balance = await waitForFunds(wallet);
+      try {
+        balance = await waitForFunds(wallet);
+      } catch (error) {
+        console.error(chalk.red("❌ Timeout waiting for wallet funding"));
+        console.log();
+        console.log(chalk.yellow.bold("💡 Troubleshooting:"));
+        console.log(chalk.white("   • ") + chalk.cyan("Check if the faucet transaction was successful"));
+        console.log(chalk.white("   • ") + chalk.cyan("Verify your wallet address is correct"));
+        console.log(chalk.white("   • ") + chalk.cyan("Wait a bit longer and try again"));
+        console.log(chalk.white("   • ") + chalk.cyan("Check network connectivity"));
+        console.log();
+        process.exit(1);
+      }
     }
 
     console.log(chalk.yellow.bold("💰 Balance: ") + chalk.green.bold(`${balance} DUST`));
