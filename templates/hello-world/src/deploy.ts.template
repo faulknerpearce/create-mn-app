@@ -93,7 +93,7 @@ async function main() {
       if (error instanceof Rx.TimeoutError) {
         console.error(
           chalk.red(
-            `❌ Wallet sync timed out after ${WALLET_SYNC_TIMEOUT_MS / 60000} minutes.`
+            `❌ Wallet sync timed out after ${WALLET_SYNC_TIMEOUT_MS / 60000} minute${WALLET_SYNC_TIMEOUT_MS / 60000 === 1 ? "" : "s"}.`
           )
         );
         console.log("💡 The network might be slow or unavailable. Please verify your node and network connection, then try again.");
