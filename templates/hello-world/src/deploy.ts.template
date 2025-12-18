@@ -145,7 +145,7 @@ async function main() {
       try {
         balance = await waitForFunds(wallet);
       } catch (error) {
-        console.error(chalk.red("❌ Timeout waiting for wallet funding"));
+        console.error(chalk.red("❌ Stopped waiting for wallet funding: no funds detected after waiting up to 10 minutes."));
         console.log();
         console.log(chalk.yellow.bold("💡 Troubleshooting:"));
         console.log(chalk.white("   • ") + chalk.cyan("Check if the faucet transaction was successful"));
