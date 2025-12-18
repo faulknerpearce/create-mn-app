@@ -79,7 +79,6 @@ async function main() {
     );
 
     wallet.start();
-    
     // Wait for wallet to sync before checking balance
     console.log(chalk.blue("⏳ Syncing wallet..."));
     try {
