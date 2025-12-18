@@ -82,8 +82,23 @@ async function main() {
       console.log(chalk.green("✅ Wallet synced!"));
       console.log();
     } catch (error) {
-      console.error(chalk.red("❌ Failed to sync wallet:", error instanceof Error ? error.message : String(error)));
-      console.log("💡 Check your network connection and try again.");
+      if (error instanceof Rx.TimeoutError) {
+        const timeoutMinutes = WALLET_SYNC_TIMEOUT_MS / 60000;
+        console.error(
+          chalk.red(
+            `❌ Wallet sync timed out after ${timeoutMinutes} minute${timeoutMinutes === 1 ? "" : "s"}.`
+          )
+        );
+        console.log("💡 The network might be slow or temporarily unavailable. Please try again later.");
+      } else {
+        console.error(
+          chalk.red(
+            "❌ Failed to sync wallet:",
+            error instanceof Error ? error.message : String(error)
+          )
+        );
+        console.log("💡 A network or wallet error occurred during sync. Check your connection and configuration, then try again.");
+      }
       process.exit(1);
     }
 
