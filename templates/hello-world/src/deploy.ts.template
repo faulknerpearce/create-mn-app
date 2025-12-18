@@ -107,6 +107,16 @@ async function main() {
         );
         console.log("💡 Check your network connection and wallet configuration, then try again.");
       }
+      try {
+        await wallet.stop();
+      } catch (stopError) {
+        console.error(
+          chalk.red(
+            "⚠️ Failed to gracefully stop wallet after error:",
+            stopError instanceof Error ? stopError.message : String(stopError)
+          )
+        );
+      }
       process.exit(1);
     }
 
