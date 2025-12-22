@@ -162,6 +162,11 @@ async function main() {
         console.log(chalk.white("   • ") + chalk.cyan("Wait a bit longer and try again"));
         console.log(chalk.white("   • ") + chalk.cyan("Check network connectivity"));
         console.log();
+        try {
+          await wallet.close();
+        } catch (closeError) {
+          console.error(chalk.red("⚠️ Failed to close wallet cleanly before exit:"), closeError);
+        }
         process.exit(1);
       }
     }
